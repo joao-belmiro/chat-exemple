@@ -26,14 +26,16 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex'
-import io from 'socket.io-client'
 import utils from '../mixins/utils.js'
+import SockJS from 'sockjs-client'
+import Stomp from 'webstomp-client'
 export default {
   mixins: [utils],
   data () {
     return {
       name: '',
-      client: io.connect('ws://localhost:8083')
+      stomp: null,
+      connected: null
     }
   },
   computed: {
@@ -42,19 +44,24 @@ export default {
   methods: {
     ...mapMutations(['setSocket', 'setUserName']),
     register () {
-      this.client.emit('registro', this.name)
       this.setUserName(this.name)
       this.$router.push({ path: '/broadcast' })
+    },
+    conectar () {
+      const socket = new SockJS('http://localhost:8082')
+      this.stomp = Stomp.over(socket)
+      this.stomp.connect({}, function (frame) {
+        console.log(frame)
+      })
     }
   },
-  mounted () {
+  /*   mounted () {
     this.client.on('connection', (data) => {
       this.nSucesso(data)
     })
-  },
+  }, */
   created () {
-    this.setSocket(this.client)
-    console.log(this.socket)
+    this.conectar()
   }
 }
 </script>

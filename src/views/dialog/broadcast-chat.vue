@@ -8,9 +8,8 @@
       <q-scroll-area
         class="q-pl-md scroll-size"
         :bar-style="barStyle"
-        :thumb-style="thumbStyle"
-      >
-		<div v-for="user in getBroadcast" :key="user.id" class="q-py-sm">
+        :thumb-style="thumbStyle">
+<div v-for="user in getBroadcast" v-bind:key="user.id" class="q-py-sm">
           <q-chat-message
             class="q-px-md  text-weight-medium text-body2"
             :name="`<strong>${user.de}</strong>`"
@@ -18,7 +17,7 @@
             :sent="getUserName === user.de"
             :bg-color="getUserName === user.de ? 'primary' : 'green-14'"
              text-color="white"/>
-        </div>
+</div>
       </q-scroll-area>
     </q-card>
     <q-card flat bordered square>
