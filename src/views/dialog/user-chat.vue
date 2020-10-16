@@ -3,7 +3,7 @@
     <q-card bordered square flat class="q-py-md card-container">
       <q-card-section class="row items-center q-gutter-md q-py-none">
         <q-icon name="fas fa-comments" size="30px" color="white" />
-        <div class="text-bold text-body1 text-white">{{'# ' + getOpenChats[index].id +' - '+ getOpenChats[index].nome}}</div>
+        <div class="text-bold text-body1 text-white">{{'# '+ getOpenChats[index].nome}}</div>
       </q-card-section>
       <q-scroll-area
         class="q-pl-md scroll-size"
@@ -22,7 +22,7 @@
       </q-scroll-area>
     </q-card>
     <q-card flat bordered square>
-      <q-form @submit="mensagemPrivada({ id: gerarId(Math.floor(1 + Math.random() * msg.length)), mensagem: msg, idDestino: $route.params.id, idRemetente: getSocketId, de: getUserName })">
+      <q-form @submit="mensagemPrivada({ id: gerarId(Math.floor(1 + Math.random() * msg.length)), mensagem: msg, destino: $route.params.nome, de: getUserName })">
         <q-card-section class="row items-center q-gutter-sm no-wrap q-px-md justify-end">
           <div class="col-sm-11 col-md-11 col-xs-9 q-pl-md">
             <q-input
@@ -87,13 +87,13 @@ export default {
   },
   methods: {
     ...mapActions(['mensagemPrivada']),
-    getIndiceAtual (id) {
-      this.index = this.getOpenChats.findIndex(chat => chat.id === id)
+    getIndiceAtual (nome) {
+      this.index = this.getOpenChats.findIndex(chat => chat.nome === nome)
       console.log(this.index)
     }
   },
   created () {
-    this.getIndiceAtual(this.$route.params.id)
+    this.getIndiceAtual(this.$route.params.nome)
   }
 }
 </script>

@@ -84,7 +84,6 @@ export default {
     ...mapActions(['enviarBroadcast', 'escutarBroadcast'])
   },
   mounted () {
-    this.escutarBroadcast()
   }
 }
 </script>

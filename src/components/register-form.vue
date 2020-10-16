@@ -25,10 +25,11 @@
 </template>
 
 <script>
-import { mapMutations, mapState } from 'vuex'
+import { mapMutations, mapState, mapActions } from 'vuex'
 import utils from '../mixins/utils.js'
 import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
+import axios from 'axios'
 export default {
   mixins: [utils],
   data () {
@@ -42,26 +43,23 @@ export default {
     ...mapState(['message', 'socket'])
   },
   methods: {
-    ...mapMutations(['setSocket', 'setUserName']),
+    ...mapMutations(['setSocket', 'setUserName', 'setMensagemChat']),
+    ...mapActions(['escutarMensagemPrivada']),
     register () {
-      this.setUserName(this.name)
-      this.$router.push({ path: '/broadcast' })
-    },
-    conectar () {
-      const socket = new SockJS('http://localhost:8082')
-      this.stomp = Stomp.over(socket)
-      this.stomp.connect({}, function (frame) {
-        console.log(frame)
+      axios.get(`http://localhost:8082/registro/${this.name}`).then(response => {
+        if (response.status === 200) {
+          this.setUserName(this.name)
+          this.escutarMensagemPrivada()
+        }
       })
     }
   },
-  /*   mounted () {
-    this.client.on('connection', (data) => {
-      this.nSucesso(data)
-    })
-  }, */
   created () {
-    this.conectar()
+    const socket = new SockJS('http://localhost:8082/chat')
+    this.stomp = Stomp.over(socket)
+    this.stomp.connect({}, function (frame) {
+    })
+    this.setSocket(this.stomp)
   }
 }
 </script>

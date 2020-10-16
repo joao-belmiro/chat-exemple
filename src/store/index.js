@@ -6,14 +6,18 @@ export default new Vuex.Store({
   state: {
     userName: '',
     socket: null,
+    conectado: null,
     chatAtual: null,
     broadcast: [],
     openChats: [],
     contatos: []
   },
   getters: {
-    getSocketId (state) {
-      return state.socket.id
+    getConectado (state) {
+      return state.conectado
+    },
+    getSocket (state) {
+      return state.socket
     },
     getContatos (state) {
       return state.contatos
@@ -29,6 +33,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    setConectado (state, conectado) {
+      state.conectado = conectado
+    },
     setSocket (state, socketConnection) {
       state.socket = socketConnection
     },
@@ -50,27 +57,28 @@ export default new Vuex.Store({
       }
     },
     setOpenChats (state, chat) {
-      const index = state.openChats.findIndex(c => c.id === chat.id)
-      if (index === -1 && state.socket.id !== chat.id) state.openChats.push({ id: chat.id, nome: chat.nome, mensagens: [] })
+      const index = state.openChats.findIndex(c => c.nome === chat.nome)
+      const ac = state.openChats.length
+      if (index === -1 && state.userName !== chat.nome) state.openChats.push({ id: ac + 1, nome: chat.nome, mensagens: [] })
     },
     rmvChat (state, contact) {
       state.openChats = state.openChats.filter(chat => chat.id !== contact.id)
       if (router.currentRoute.name !== 'broadcast') router.push({ path: '/broadcast' })
     },
     setMensagem (state, mensagem) {
-      const index = state.openChats.findIndex(c => c.id === mensagem.idDestino)
+      const index = state.openChats.findIndex(c => c.nome === mensagem.destino)
       state.openChats[index].mensagens.push({ de: mensagem.de, id: mensagem.id, mensagem: mensagem.mensagem })
     },
     setMensagemChat (state, mensagem) {
       const addInital = function (msg) {
-        state.openChats.unshift({ id: msg.idRemetente, nome: msg.de, mensagens: [] })
-        state.openChats[0].mensagens.push({ de: msg.de, id: msg.id, mensagem: msg.mensagem })
+        state.openChats.unshift({ id: msg.idRemetente, nome: msg.enviou, mensagens: [] })
+        state.openChats[0].mensagens.push({ de: msg.enviou, id: msg.id, mensagem: msg.mensagem })
       }
       if (state.openChats.length === 0) {
         addInital(mensagem)
       } else {
-        const index = state.openChats.findIndex(chat => chat.id === mensagem.idRemetente)
-        index === -1 && state.openChats.length !== 0 ? addInital(mensagem) : state.openChats[index].mensagens.push({ de: mensagem.de, id: mensagem.id, mensagem: mensagem.mensagem })
+        const index = state.openChats.findIndex(chat => chat.nome === mensagem.enviou)
+        index === -1 && state.openChats.length !== 0 ? addInital(mensagem) : state.openChats[index].mensagens.push({ de: mensagem.enviou, id: mensagem.id, mensagem: mensagem.mensagem })
       }
     },
     setChatAtual (state, chat) {
@@ -99,13 +107,12 @@ export default new Vuex.Store({
     },
     mensagemPrivada ({ state, commit }, mensagem) {
       console.log(mensagem)
-      state.socket.emit('mensagem-privada', mensagem)
+      state.socket.send(`/app/chat/${mensagem.destino}`, JSON.stringify({ id: mensagem.id, mensagem: mensagem.mensagem, enviou: mensagem.de }), {})
       commit('setMensagem', mensagem)
     },
     escutarMensagemPrivada ({ state, commit }) {
-      state.socket.on('mensagem-privada', function (data) {
-        console.log(data)
-        commit('setMensagemChat', data)
+      state.socket.subscribe(`/topic/mensagem/${state.userName}`, function (data) {
+        commit('setMensagemChat', JSON.parse(data.body))
       })
     }
   },

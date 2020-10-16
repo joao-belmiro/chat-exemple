@@ -18,7 +18,7 @@ const routes = [
       component: () => import('../views/dialog/broadcast-chat.vue')
     },
     {
-      path: 'chat/:id',
+      path: 'chat/:nome',
       name: 'chat',
       component: () => import('../views/dialog/user-chat.vue')
     }]

@@ -23,20 +23,18 @@
     header-class="text-green-14"
   >
     <q-card class="bg-dark">
-      <q-card-section class="q-py-sm">
-        <q-input
+      <q-card-section class="">
+        <div class="row justify-center">
+          <q-btn
+           dense
+           label="Recarregar"
+          icon="refresh"
+          @click="listarCadastrados()"
           color="green-14"
-          borderless
-          dense
-          v-model="nome"
-          label="Digite um Nome"
-        >
-          <template v-slot:append>
-            <q-btn dense round @click="buscarContatos(nome)" outline text-color="positive" icon="search"/>
-          </template>
-        </q-input>
+          no-caps/>
+        </div>
       </q-card-section>
-      <q-card-section class="q-px-none q-pa-none">
+      <q-card-section class="q-pa-none">
         <q-list separator>
           <template v-for="user in getContatos" >
             <q-item v-bind:key="user.id">
@@ -80,7 +78,7 @@
           clickable
           v-ripple
           tag="a"
-          :to="`/chat/${user.id}`"
+          :to="`/chat/${user.nome}`"
           active-class="my-menu-link"
           @click="setChatAtual(user)"
         >
@@ -88,9 +86,8 @@
             <q-icon name="far fa-user-circle" size="30px" />
           </q-item-section>
           <q-item-section>
-            <q-item-label class="text-bold text-white"
+            <q-item-label class="text-bold text-white text-body1"
               > {{ user.nome }}</q-item-label>
-            <q-item-label caption>{{ user.id }}</q-item-label>
           </q-item-section>
         </q-item>
         </q-slide-item>
@@ -100,6 +97,7 @@
 </template>
 <script>
 import { mapActions, mapGetters, mapMutations } from 'vuex'
+import axios from 'axios'
 export default {
   data () {
     return {
@@ -107,15 +105,27 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['getOpenChats', 'getContatos'])
+    ...mapGetters(['getOpenChats', 'getContatos', 'getConectado'])
   },
   methods: {
     ...mapActions(['buscarContatos', 'escutarBuscaContatos', 'escutarMensagemPrivada']),
-    ...mapMutations(['setOpenChats', 'rmvChat', 'setChatAtual'])
+    ...mapMutations(['setOpenChats', 'rmvChat', 'setChatAtual', 'setContatos']),
+    listarCadastrados () {
+      axios.get('http://localhost:8082/todos').then(response => {
+        const contatos = response.data.map(function (value, index) {
+          return { id: index, nome: value }
+        })
+        this.setContatos(contatos)
+      })
+    }
   },
   mounted () {
-    this.escutarBuscaContatos()
-    this.escutarMensagemPrivada()
+  },
+  created () {
+    this.listarCadastrados()
+  },
+  beforeDestroy () {
+    console.log('destruiu')
   }
 }
 </script>
